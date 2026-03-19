@@ -246,7 +246,7 @@
             try {
                 const response = await fetch(`${API_URL}/ciudades`);
                 if (response.ok) {
-                    document.getElementById('connectionStatus').innerHTML = '🟢 Conectado al servidor';
+                    document.getElementById('connectionStatus').innerHTML = ' Conectado al servidor';
                     document.getElementById('connectionStatus').className = 'connection-status online';
                     return true;
                 }
@@ -330,7 +330,7 @@
                     routeDisplay.innerHTML = html;
                     routeStats.innerHTML = `${data.ruta.length} ciudades | ${data.ruta.length - 1} conexiones`;
                 } else {
-                    routeDisplay.innerHTML = '<div class="not-found">❌ No se encontró una ruta disponible</div>';
+                    routeDisplay.innerHTML = '<div class="not-found"> No se encontró una ruta disponible</div>';
                     routeStats.innerHTML = '';
                 }
                 
