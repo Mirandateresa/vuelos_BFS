@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador de Vuelos BFS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2e1a47 0%, #4a266a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(106, 13, 173, 0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid #9b4dff;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 8px 32px rgba(106, 13, 173, 0.3);
+        }
+
+        h1 {
+            color: #d9b3ff;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px #b266ff;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: #c28eff;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        select {
+            background: rgba(75, 0, 130, 0.8);
+            border: 2px solid #9b4dff;
+            color: #f0e6ff;
+            cursor: pointer;
+        }
+
+        select option {
+            background: #4a1a6e;
+            color: #f0e6ff;
+        }
+
+        select:hover {
+            background: rgba(106, 13, 173, 0.9);
+            border-color: #d9b3ff;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            background: #6a0dad;
+            border: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid #b266ff;
+            flex: 1;
+        }
+
+        button:hover {
+            background: #8a2be2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(178, 102, 255, 0.5);
+        }
+
+        button.reset {
+            background: #4a1a6e;
+            border-color: #9370db;
+        }
+
+        .connection-status {
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(106, 13, 173, 0.3);
+            font-weight: bold;
+        }
+
+        .online {
+            color: #00ff00;
+        }
+
+        .offline {
+            color: #ff0000;
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(75, 0, 130, 0.5);
+            border-radius: 15px;
+            border: 2px solid #b266ff;
+            min-height: 150px;
+        }
+
+        .result-title {
+            color: #d9b3ff;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .route-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            min-height: 60px;
+        }
+
+        .city-box {
+            background: #8a2be2;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            border: 2px solid #d9b3ff;
+            box-shadow: 0 0 15px #b266ff;
+            font-size: 1.1em;
+        }
+
+        .arrow {
+            color: #d9b3ff;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .not-found {
+            color: #ffb3b3;
+            text-align: center;
+            font-size: 1.2em;
+            padding: 20px;
+        }
+
+        .city-info {
+            text-align: center;
+            color: #c28eff;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(106, 13, 173, 0.3);
+            border-radius: 10px;
+            font-size: 0.95em;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #b266ff;
+            font-size: 0.9em;
+        }
+
+        .stats {
+            color: #c28eff;
+            font-size: 0.9em;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✈️ Buscador de Vuelos BFS</h1>
+        
+        <div class="city-info">
+            <span>Escoge un destino entre nuestras cuidades disponibles</span>
+        </div>
+
+        <div class="form-group">
+            <label for="origen"> Ciudad de Origen:</label>
+            <select id="origen"></select>
+        </div>
+
+        <div class="form-group">
+            <label for="destino"> Ciudad de Destino:</label>
+            <select id="destino"></select>
+        </div>
+
+        <div class="button-group">
+            <button id="buscarBtn"> Buscar Ruta</button>
+            <button id="resetBtn" class="reset"> Reset</button>
+        </div>
+
+        <div id="connectionStatus" class="connection-status offline">
+             Verificando conexión...
+        </div>
+
+        <div class="result-container">
+            <div class="result-title"> Ruta Encontrada:</div>
+            <div id="routeDisplay" class="route-display"></div>
+            <div id="routeStats" class="stats"></div>
+        </div>
+
+        <footer>
+            Búsqueda en Amplitud (BFS) | 🌙 Tema Morado
+        </footer>
+    </div>
+
+    <script>
+        async function verificarConexion() {
+            try {
+                const response = await fetch('http://localhost:5000/ciudades');
+                if (response.ok) {
+                    document.getElementById('connectionStatus').innerHTML = ' Conectado al servidor';
+                    document.getElementById('connectionStatus').className = 'connection-status online';
+                    return true;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+            document.getElementById('connectionStatus').innerHTML = ' Servidor no disponible';
+            document.getElementById('connectionStatus').className = 'connection-status offline';
+            return false;
+        }
+
+        async function cargarCiudades() {
+            await verificarConexion();
+            try {
+                const response = await fetch('http://localhost:5000/ciudades');
+                const data = await response.json();
+                console.log('Ciudades:', data);
+                
+                const origenSelect = document.getElementById('origen');
+                const destinoSelect = document.getElementById('destino');
+                
+                origenSelect.innerHTML = '';
+                destinoSelect.innerHTML = '';
+                
+                data.ciudades.sort().forEach(ciudad => {
+                    origenSelect.innerHTML += `<option value="${ciudad}">${ciudad}</option>`;
+                    destinoSelect.innerHTML += `<option value="${ciudad}">${ciudad}</option>`;
+                });
+
+                origenSelect.value = 'JILOYORK';
+                destinoSelect.value = 'ZACATECAS';
+                
+            } catch (error) {
+                console.error('Error cargando ciudades:', error);
+            }
+        }
+
+        async function buscarRuta() {
+            const origen = document.getElementById('origen').value;
+            const destino = document.getElementById('destino').value;
+            
+            console.log('Buscando:', origen, '→', destino);
+            
+            if (origen === destino) {
+                document.getElementById('routeDisplay').innerHTML = '<div class="not-found">El origen y destino deben ser diferentes</div>';
+                document.getElementById('routeStats').innerHTML = '';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5000/buscar_ruta', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        origen: origen,
+                        destino: destino
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('Respuesta:', data);
+                
+                const routeDisplay = document.getElementById('routeDisplay');
+                const routeStats = document.getElementById('routeStats');
+                
+                if (data.encontrada && data.ruta && data.ruta.length > 0) {
+                    // Mostrar la ruta completa
+                    let html = '';
+                    data.ruta.forEach((ciudad, index) => {
+                        html += `<span class="city-box">${ciudad}</span>`;
+                        if (index < data.ruta.length - 1) {
+                            html += `<span class="arrow">→</span>`;
+                        }
+                    });
+                    routeDisplay.innerHTML = html;
+                    routeStats.innerHTML = `${data.ruta.length} ciudades | ${data.ruta.length - 1} conexiones`;
+                } else {
+                    routeDisplay.innerHTML = '<div class="not-found"> No se encontró una ruta disponible</div>';
+                    routeStats.innerHTML = '';
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('routeDisplay').innerHTML = '<div class="not-found">Error en la búsqueda</div>';
+                document.getElementById('routeStats').innerHTML = '';
+            }
+        }
+
+        function resetBusqueda() {
+            document.getElementById('origen').value = 'JILOYORK';
+            document.getElementById('destino').value = 'ZACATECAS';
+            document.getElementById('routeDisplay').innerHTML = '';
+            document.getElementById('routeStats').innerHTML = '';
+        }
+
+        // Event Listeners
+        document.getElementById('buscarBtn').addEventListener('click', buscarRuta);
+        document.getElementById('resetBtn').addEventListener('click', resetBusqueda);
+
+        // Cargar ciudades al iniciar
+        cargarCiudades();
+    </script>
+</body>
+</html>
